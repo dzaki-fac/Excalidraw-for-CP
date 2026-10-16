@@ -8,6 +8,7 @@ import { t } from "../i18n";
 
 import { useEditorInterface, useStylesPanelMode } from "./App";
 import { HintViewer } from "./HintViewer";
+import { IconButton } from "./IconButton";
 import { Island } from "./Island";
 import { LockButton } from "./LockButton";
 import { PenModeButton } from "./PenModeButton";
@@ -24,6 +25,7 @@ import {
   MagicIcon,
   mermaidLogoIcon,
   DotsIcon,
+  TableIcon,
 } from "./icons";
 import {
   ArrowToolButton,
@@ -308,6 +310,16 @@ export const Toolbar = ({
         <TextToolButton {...toolProps} />
         <StickyNoteToolButton {...toolProps} />
         <EraserToolButton {...toolProps} />
+        {app.props.onInsertTableRequest && (
+          <IconButton
+            type="button"
+            icon={TableIcon}
+            title="Insert table"
+            aria-label="Insert table"
+            data-testid="toolbar-table"
+            onClick={() => app.props.onInsertTableRequest?.()}
+          />
+        )}
 
         <div
           className="App-toolbar__divider"

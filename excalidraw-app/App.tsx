@@ -106,7 +106,9 @@ import {
   ExportToExcalidrawPlus,
   exportToExcalidrawPlus,
 } from "./components/ExportToExcalidrawPlus";
+import { TableInsertDialog } from "./components/TableInsertDialog";
 import { TopErrorBoundary } from "./components/TopErrorBoundary";
+import { buildTableElements } from "./utils/buildTableElements";
 
 import {
   exportToBackend,
@@ -376,6 +378,7 @@ const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [isTableInsertOpen, setTableInsertOpen] = useState(false);
   const isCollabDisabled = isRunningInIframe();
 
   const { editorTheme, appTheme, setAppTheme } = useHandleAppTheme();
@@ -830,6 +833,35 @@ const ExcalidrawWrapper = () => {
     [setShareDialogState],
   );
 
+  const handleInsertTable = useCallback(
+    (rows: number, cols: number) => {
+      if (!excalidrawAPI) {
+        return;
+      }
+      const appState = excalidrawAPI.getAppState();
+      const zoom = appState.zoom.value;
+      const centerX = appState.scrollX + appState.width / 2 / zoom;
+      const centerY = appState.scrollY + appState.height / 2 / zoom;
+      const { elements, ids } = buildTableElements({
+        rows,
+        cols,
+        centerX,
+        centerY,
+      });
+      const restored = restoreElements(
+        [...excalidrawAPI.getSceneElements(), ...elements],
+        null,
+      );
+      excalidrawAPI.updateScene({
+        elements: restored,
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+      });
+      excalidrawAPI.selection.select(ids);
+      setTableInsertOpen(false);
+    },
+    [excalidrawAPI],
+  );
+
   // ---------------------------------------------------------------------------
   // onExport — intercepts file save to wait for pending image loads
   // ---------------------------------------------------------------------------
@@ -1026,6 +1058,7 @@ const ExcalidrawWrapper = () => {
             });
           }
         }}
+        onInsertTableRequest={() => setTableInsertOpen(true)}
       >
         <AppMainMenu
           onCollabDialogOpen={onCollabDialogOpen}
@@ -1033,6 +1066,7 @@ const ExcalidrawWrapper = () => {
           isCollabEnabled={!isCollabDisabled}
           theme={appTheme}
           refresh={() => forceRefresh((prev) => !prev)}
+          onTableInsert={() => setTableInsertOpen(true)}
         />
         <AppWelcomeScreen
           onCollabDialogOpen={onCollabDialogOpen}
@@ -1101,6 +1135,13 @@ const ExcalidrawWrapper = () => {
         />
 
         <AppSidebar />
+
+        {isTableInsertOpen && excalidrawAPI && (
+          <TableInsertDialog
+            onClose={() => setTableInsertOpen(false)}
+            onInsert={handleInsertTable}
+          />
+        )}
 
         {errorMessage && (
           <ErrorDialog onClose={() => setErrorMessage("")}>

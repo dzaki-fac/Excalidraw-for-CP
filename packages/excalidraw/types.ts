@@ -932,6 +932,13 @@ export interface ExcalidrawProps {
     isMobile: boolean,
     appState: UIAppState,
   ) => JSX.Element | null;
+  /**
+   * Called when the host-provided table-insert toolbar button is clicked.
+   * When set, a table icon button is rendered in the main toolbar which
+   * triggers this callback (the host is expected to open its own dialog).
+   * When unset, no button is rendered.
+   */
+  onInsertTableRequest?: () => void;
   langCode?: Language["code"];
   viewModeEnabled?: boolean;
   /**
